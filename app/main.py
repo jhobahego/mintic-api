@@ -10,13 +10,22 @@ def home():
 async def root():
     return {"message": "hola misiontic"}
 
-@app.get("usuarios/{user_id}")
-async def read_user(user_id: int):
-    return {"user_id": user_id}
+usuarios = ['jhon', 'maria', 'heidy']
+documentos = []
 
-cursos = [{"curso": "fundamentos programacion"}, {"curso": "programacion basica"}, {"curso": "Desarrollo de software"}, {"curso": "Desarrollo de app webs"}]
+@app.get("/usuarios")
+async def obtener_usuarios():
+    return usuarios
 
-@app.get("/cursos/")
-async def read_item(skip: int = 0, limit: int = 10):
-    return cursos[skip: skip + limit]
-        
+@app.get("/usuarios/{user_id}")
+async def obtener_usuario(user_id: int):
+    print(usuarios[user_id])
+    return usuarios[user_id]
+
+@app.get("/documentos/")
+async def obtener_documentos():
+    return documentos
+
+@app.get("/documentos/{documento_id}")
+async def obtener_documentos(documento_id: int):
+    return documentos[documento_id]
