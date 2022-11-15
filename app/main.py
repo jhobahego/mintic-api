@@ -77,7 +77,7 @@ async def obtener_documentos():
 @app.get("/documentos/{documento_id}")
 async def obtener_documentos(documento_id: int):
     for documento in documentos:
-        dato = documento.get("id")
+        dato = documento.get("documento_id")
         if dato == documento_id:
             return documentos[documento_id]
     return None
@@ -98,7 +98,7 @@ async def obtener_ventas():
 @app.get("/registro/{documento_id}")
 async def obtener_registro_por_id(documento_id:int):
     for registro in registros:
-        dato = registro[documento_id]
+        dato = registro.get("registro_id")
         if dato:
-            return registro[documento_id]
+            return registro
     return None
