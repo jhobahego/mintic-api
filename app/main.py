@@ -48,17 +48,14 @@ async def obtener_usuarios():
 @app.get("/usuarios/{user_id}")
 async def obtener_usuario_por_id(user_id: int):
     for usuario in usuarios:
-        dato = usuario.get("usuario_id")
-        print(f"diccionario={dato}, pasado_por_url={user_id}")
-        if dato == user_id:
+        if usuario["usuario_id"] == user_id:
             return usuario
     raise HTTPException(status_code=404, detail="usuario no encontrado")
 
 @app.get("/usuarios/nombre=/{nombre_usuario}")
 async def obtener_usuario_por_nombre(nombre_usuario: str):
     for usuario in usuarios:
-        dato = usuario.get("nombres")
-        if dato == nombre_usuario:
+        if usuario["nombres"] == nombre_usuario:
             return usuario    
     raise HTTPException(status_code=404, detail="usuario no encontrado")
 
@@ -69,16 +66,14 @@ async def obtener_documentos():
 @app.get("/documentos/{documento_id}")
 async def obtener_documento_por_id(documento_id: int):
     for documento in documentos:
-        dato = documento.get("documento_id")
-        if dato == documento_id:
+        if documento["documento_id"] == documento_id:
             return documento
     raise HTTPException(status_code=404, detail="documento no encontrado")
 
 @app.get("/documentos/titulo=/{titulo}")
 async def obtener_documento_por_titulo(titulo:str):
     for documento in documentos:
-        dato = documento.get("titulo")
-        if dato == titulo:
+        if documento["documento_id"] == titulo:
             return documento
     raise HTTPException(status_code=404, detail="documento no encontrado")
 
@@ -86,11 +81,24 @@ async def obtener_documento_por_titulo(titulo:str):
 async def obtener_ventas():
     return registros
 
-@app.get("/ventas/{documento_id}")
-async def obtener_registro_por_id(documento_id:int):
+@app.get("/ventas/usuario/{usuario_id}")
+async def obtener_ventas_de_usuario(usuario_id:int):
     for registro in registros:
-        dato = registro.get("registro_id")
-        if dato == documento_id:
+        if registro["usuario_id"] == usuario_id:
+            return registro
+    raise HTTPException(status_code=404, detail="registro no encontrado")
+
+@app.get("/ventas/documento=/{documento_id}")
+async def obtener_ventas_de_documento(documento_id:int):
+    for registro in registros:
+        if registro["documento_id"] == documento_id:
+            return registro
+    raise HTTPException(status_code=404, detail="registro no encontrado")
+
+@app.get("/ventas/tipo=/{tipo_de_venta}")
+async def obtener_ventas_por_tipo(tipo_de_venta:str):
+    for registro in registros:
+        if registro["tipo_de_venta"] == tipo_de_venta:
             return registro
     raise HTTPException(status_code=404, detail="registro no encontrado")
 
