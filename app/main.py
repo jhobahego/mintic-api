@@ -31,7 +31,7 @@ class Documento(BaseModel):
 class Registro(BaseModel):
     registro_id: Optional[str]
     usuario_id: int
-    documento_id: int
+    nombre_documento: str
     tipo_de_venta: str
     cantidad: int
 
@@ -88,10 +88,10 @@ async def obtener_ventas_de_usuario(usuario_id:int):
             return registro
     raise HTTPException(status_code=404, detail="registro no encontrado")
 
-@app.get("/ventas/documento=/{documento_id}")
-async def obtener_ventas_de_documento(documento_id:int):
+@app.get("/ventas/documento=/{nombre}")
+async def obtener_ventas_de_documento(nombre:str):
     for registro in registros:
-        if registro["documento_id"] == documento_id:
+        if registro["nombre_documento"] == nombre:
             return registro
     raise HTTPException(status_code=404, detail="registro no encontrado")
 
