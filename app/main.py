@@ -4,8 +4,14 @@ from pydantic import BaseModel
 from typing import Optional, Text
 from uuid import uuid4 as uuid
 from bson import ObjectId
+import motor.motor_asyncio
+import os
 
 app = FastAPI()
+
+client = motor.motor_asyncio.AsyncIOMotorClient(os.environ["MONGODB_URL"])
+
+db = client.misiontic
 
 # origins = [
 #     "http://localhost:8080",
