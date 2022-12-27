@@ -22,3 +22,6 @@ toml
 typed-ast
 typing-extensions
 uvicorn
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
