@@ -15,7 +15,6 @@ pathspec
 pycodestyle
 pydantic
 pyflakes
-pymongo
 regex
 starlette
 toml
@@ -25,3 +24,4 @@ uvicorn
 python-multipart
 python-jose[cryptography]
 passlib[bcrypt]
+python-dotenv
