@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# from routes.usuarios import usuario
+from routes.usuarios import usuario
 from routes.documentos import documento
 from routes.registros import registro
 from auth.autenticacion import auth
@@ -9,7 +9,7 @@ from auth.autenticacion import auth
 
 app = FastAPI()
 
-# app.include_router(usuario)
+app.include_router(usuario)
 app.include_router(documento)
 app.include_router(registro)
 app.include_router(auth)
