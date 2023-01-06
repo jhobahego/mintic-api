@@ -21,8 +21,8 @@ async def obtener_usuarios():
     return usuarios
 
 
-@usuario.get("/usuarios/{usuario_id}", response_description="usuario listado", response_model=Usuario)
-async def obtener_usuario_por_id(usuario_id: str, token: str = Depends(esquema_oauth)):
+# @usuario.get("/usuarios/{usuario_id}", response_description="usuario listado", response_model=Usuario)
+# async def obtener_usuario_por_id(usuario_id: str, token: str = Depends(esquema_oauth)):
     if (usuario := await conn["usuarios"].find_one({"_id": usuario_id})) is not None:
         return usuario
 
