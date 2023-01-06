@@ -6,6 +6,7 @@ from models.Id import PyObjectId
 class Registro(BaseModel):
     registro_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     id_cliente: str = Field(...)
+    nombre_cliente: str = Field(...)
     id_documento: str = Field(...)
     titulo_documento: str = Field(...)
     tipo_de_adquisicion: str = Field(...)
@@ -17,10 +18,11 @@ class Registro(BaseModel):
         json_encoders = {ObjectId: str}
         schema_extra = {
             "example": {
-                "cliente_id": "12352252",
-                "documento_id": "12425266353",
-                "titulo_documento": "hernandez gomez",
+                "id_cliente": "63afc7da089fe226352a222",
+                "nombre_cliente": "Jhon Hernandez",
+                "id_documento": "a9f63fc7d4a089fe22635224",
+                "titulo_documento": "Clean code",
                 "tipo_de_adquisicion": "prestamo",
-                "cantidad": "124",
+                "cantidad": "1",
             }
         }
