@@ -1,6 +1,5 @@
 appdirs
 black
-bson
 click
 dnspython
 email-validator
