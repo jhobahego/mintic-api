@@ -22,7 +22,7 @@ contexto_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 CLAVE = os.environ["CLAVE_SECRETA"]
 ALGORITMO = "HS256"
-TIEMPO_EN_MINUTOS_EXPIRACION_TOKEN = 30
+TIEMPO_EN_MINUTOS_EXPIRACION_TOKEN = 60
 
 def verificar_contra(contra, contra_hasheada):
     return contexto_pwd.verify(contra, contra_hasheada)
