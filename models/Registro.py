@@ -11,7 +11,7 @@ class Registro(BaseModel):
     titulo_documento: str = Field(...)
     tipo_de_adquisicion: str = Field(...)
     cantidad: int = Field(...)
-    activo: bool = Field(default=True)
+    activo: bool = Field(...)
 
     class Config:
         allow_population_by_field_name = True
