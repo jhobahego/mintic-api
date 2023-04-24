@@ -26,10 +26,11 @@ async def obtener_adquisicion_de_usuario(usuario_id: str, token: str = Depends(e
         status_code=404, detail=f"No se encontraron registros para el cliente con id: {usuario_id}")
 
 
-@registro.get("/ventas/documento?/{nombre}", response_description="Registro obtenido", response_model=Registro)
+@registro.get("/ventas/documento/{nombre}", response_description="Registro obtenido", response_model=List[Registro])
 async def obtener_ventas_de_documento(nombre: str, token: str = Depends(esquema_oauth)):
-    if (registro := await conn["ventas"].find_one({"titulo_documento": nombre})) is not None:
-        return registro
+    registros = await conn["ventas"].find({"titulo_documento": nombre}).to_list(length=None)
+    if registros:
+        return registros
     raise HTTPException(
         status_code=404, detail=f"documento {nombre} no encontrado")
 
