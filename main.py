@@ -14,12 +14,6 @@ app.include_router(documento)
 app.include_router(registro)
 app.include_router(auth)
 
-
-# origins = [
-#     "http://localhost:8080",
-# ]
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins="http://localhost:8080",
