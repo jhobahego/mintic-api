@@ -5,6 +5,7 @@ from fastapi.responses import JSONResponse
 from config.db import conn
 from auth.autenticacion import esquema_oauth
 from models.Registro import Registro
+from typing import List
 
 registro = APIRouter()
 
@@ -15,13 +16,14 @@ async def obtener_ventas(token: str = Depends(esquema_oauth)):
     return registros
 
 
-@registro.get("/ventas/usuario/{usuario_id}", response_description="Usuario obtenido", response_model=Registro)
+@registro.get("/ventas/usuario/{usuario_id}", response_description="Usuario obtenido", response_model=List[Registro])
 async def obtener_adquisicion_de_usuario(usuario_id: str, token: str = Depends(esquema_oauth)):
-    if (registro := await conn["ventas"].find_one({"id_cliente": usuario_id})) is not None:
-        return registro
+    registros = await conn["ventas"].find({"id_cliente": usuario_id}).to_list(length=None)
+    if registros:
+        return registros
 
     raise HTTPException(
-        status_code=404, detail=f"cliente {usuario_id} no encontrado")
+        status_code=404, detail=f"No se encontraron registros para el cliente con id: {usuario_id}")
 
 
 @registro.get("/ventas/documento?/{nombre}", response_description="Registro obtenido", response_model=Registro)
