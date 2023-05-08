@@ -9,6 +9,7 @@ class Documento(BaseModel):
     autor: str = Field(...)
     titulo: str = Field(...)
     descripcion: Text = Field(...)
+    imagen: str = Field(...)
     categoria: str = Field(...)
     stock: int = Field(...)
     precio: int = Field(...)
@@ -26,6 +27,7 @@ class Documento(BaseModel):
                 "autor": "Robert C. Martin",
                 "titulo": "clean code",
                 "descripcion": "un libro para aprender codigo",
+                "imagen": "https://www.google.com/imgres?imgurl=https%3A%2F%2Fimages.cdn2.buscalibre.com%2Ffit-in%2F360x360%2F03%2F1a%2F031af9d7e401bb2d08911c317ecbedad.jpg&tbnid=ivGrcngPn4jHBM&vet=12ahUKEwjm6KqEieL-AhW9lIQIHReWBZsQMygAegUIARDeAQ..i&imgrefurl=https%3A%2F%2Fwww.buscalibre.com.co%2Flibro-the-pragmatic-programmer-your-journey-to-mastery-20th-anniversary-edition-libro-en-ingles%2F9780135957059%2Fp%2F52121486&docid=9ey-sNX8FfSKVM&w=275&h=360&q=the%20pragmatic%20programmer&ved=2ahUKEwjm6KqEieL-AhW9lIQIHReWBZsQMygAegUIARDeAQ",
                 "categoria": "desarrollo de software",
                 "stock": "12",
                 "precio": "40",
