@@ -10,7 +10,7 @@ from typing import List
 registro = APIRouter()
 
 
-@registro.get("/ventas", response_description="Registros listados", response_model=Registro)
+@registro.get("/ventas", response_description="Registros listados", response_model=List[Registro])
 async def obtener_ventas(token: str = Depends(esquema_oauth)):
     registros = await conn["ventas"].find().to_list(1000)
     return registros
