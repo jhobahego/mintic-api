@@ -4,9 +4,10 @@ from fastapi.encoders import jsonable_encoder
 from passlib.context import CryptContext
 from typing import List
 
-from models.Usuario import Usuario, ActualizarUsuario
+from models.Usuario import Usuario, ActualizarUsuario, Role
 from config.db import conn
 from auth.autenticacion import esquema_oauth
+from auth.services import usuario_rol_requerido
 
 usuario = APIRouter()
 
@@ -41,14 +42,25 @@ async def obtener_usuario_por_nombre(nombre_usuario: str, token: str = Depends(e
 
 @usuario.post("/usuarios/guardar", response_description="Usuario guardado", response_model=Usuario)
 async def guardar_usuario(usuario: Usuario = Body(...)):
+    usuarios = await obtener_usuarios()
+    if any(u["correo"] == usuario.correo for u in usuarios):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Correo ya registrado"
+        )
+
+    if len(usuarios) < 3:
+        usuario.rol = Role.ADMIN
+
     usuario.contra = hashear_contra(usuario.contra)
     usuario = jsonable_encoder(usuario)
+
     nuevo_usuario = await conn["usuarios"].insert_one(usuario)
     usuario_creado = await conn["usuarios"].find_one({"_id": nuevo_usuario.inserted_id})
+
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=usuario_creado)
 
-
-@usuario.put("/usuarios/actualizar/{usuario_id}", response_description="Usuario actualizado", response_model=Usuario)
+@usuario.put("/usuarios/actualizar/{usuario_id}", response_description="Usuario actualizado", response_model=Usuario, dependencies=[Depends(usuario_rol_requerido)])
 async def actualizar_usuario(usuario_id: str, usuario: ActualizarUsuario = Body(...), token: str = Depends(esquema_oauth)):
     usuario = {datos: valor for datos, valor in usuario.dict().items()
                if valor is not None}
@@ -68,7 +80,7 @@ async def actualizar_usuario(usuario_id: str, usuario: ActualizarUsuario = Body(
         status_code=404, detail=f"usuario con id: {usuario_id} no encontrado")
 
 
-@usuario.delete("/usuarios/eliminar/{usuario_id}", response_description="usuario eliminado")
+@usuario.delete("/usuarios/eliminar/{usuario_id}", response_description="usuario eliminado", dependencies=[Depends(usuario_rol_requerido)])
 async def eliminar_usuario_por_id(usuario_id: str, token: str = Depends(esquema_oauth)):
     usuario_eliminado = await conn["usuarios"].delete_one({"_id": usuario_id})
     if usuario_eliminado.deleted_count == 1:
