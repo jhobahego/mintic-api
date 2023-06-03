@@ -35,10 +35,11 @@ async def obtener_ventas_de_documento(nombre: str, token: str = Depends(esquema_
         status_code=404, detail=f"documento {nombre} no encontrado")
 
 
-@registro.get("/ventas/tipo?/{tipo_de_venta}", response_description="Registro obtenido", response_model=Registro)
+@registro.get("/ventas/tipo/{tipo_de_venta}", response_description="Registro obtenido", response_model=Registro)
 async def obtener_ventas_por_tipo(tipo_de_venta: str, token: str = Depends(esquema_oauth)):
-    if (registro := await conn["ventas"].find_one({"tipo_de_adquisicion": tipo_de_venta})) is not None:
-        return registro
+    registro_obtenido = await conn["ventas"].find_one({"tipo_de_adquisicion": tipo_de_venta})
+    if registro_obtenido is not None:
+        return registro_obtenido
     raise HTTPException(
         status_code=404, detail=f"el documento {tipo_de_venta} no fue encontrado")
 
