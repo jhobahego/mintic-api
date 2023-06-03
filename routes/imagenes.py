@@ -6,7 +6,7 @@ import shutil
 imagenes = APIRouter()
 
 
-@imagenes.get("/imagenes/{nombre_imagen}")
+@imagenes.get("/images/{nombre_imagen}")
 async def obtener_imagen(nombre_imagen: str):
     ruta_imagen = Path(f"images/{nombre_imagen}").absolute()
 
