@@ -22,19 +22,11 @@ async def obtener_usuarios():
     return usuarios
 
 
-# @usuario.get("/usuarios/{usuario_id}", response_description="usuario listado", response_model=Usuario)
-# async def obtener_usuario_por_id(usuario_id: str, token: str = Depends(esquema_oauth)):
-    if (usuario := await conn["usuarios"].find_one({"_id": usuario_id})) is not None:
-        return usuario
-
-    raise HTTPException(
-        status_code=404, detail=f"Usuario con id {usuario_id} no encontrado")
-
-
 @usuario.get("/usuarios/nombre/{nombre_usuario}", response_description="Usuario obtenido", response_model=Usuario)
 async def obtener_usuario_por_nombre(nombre_usuario: str, token: str = Depends(esquema_oauth)):
-    if (usuario := await conn["usuarios"].find_one({"nombres": nombre_usuario})) is not None:
-        return usuario
+    usuario_obtenido = await conn["usuarios"].find_one({"nombres": nombre_usuario})
+    if usuario_obtenido is not None:
+        return usuario_obtenido
 
     raise HTTPException(
         status_code=404, detail=f"Usuario {nombre_usuario} no encontrado")
@@ -60,27 +52,27 @@ async def guardar_usuario(usuario: Usuario = Body(...)):
 
     return JSONResponse(status_code=status.HTTP_201_CREATED, content=usuario_creado)
 
-@usuario.put("/usuarios/actualizar/{usuario_id}", response_description="Usuario actualizado", response_model=Usuario, dependencies=[Depends(usuario_rol_requerido)])
+@usuario.put("/usuarios/actualizar/{usuario_id}", response_description="Usuario actualizado", response_model=Usuario)
 async def actualizar_usuario(usuario_id: str, usuario: ActualizarUsuario = Body(...), token: str = Depends(esquema_oauth)):
-    usuario = {datos: valor for datos, valor in usuario.dict().items()
+    usuario_actualizar = {datos: valor for datos, valor in usuario.dict().items()
                if valor is not None}
-    if len(usuario) >= 1:
-        update_result = await conn["usuarios"].update_one({"_id": usuario_id}, {"$set": usuario})
+    if len(usuario_actualizar) >= 1:
+        update_result = await conn["usuarios"].update_one({"_id": usuario_id}, {"$set": usuario_actualizar})
 
         if update_result.modified_count == 1:
-            if (
-                usuario_actualizado := await conn["usuarios"].find_one({"_id": usuario_id})
-            ) is not None:
+            usuario_actualizado = await conn["usuarios"].find_one({"_id": usuario_id})
+            if usuario_actualizado is not None:
                 return usuario_actualizado
 
-    if (usuario_existente := await conn["usuarios"].find_one({"_id": usuario_id})) is not None:
+    usuario_existente = await conn["usuarios"].find_one({"_id": usuario_id})
+    if usuario_existente is not None:
         return usuario_existente
 
     raise HTTPException(
         status_code=404, detail=f"usuario con id: {usuario_id} no encontrado")
 
 
-@usuario.delete("/usuarios/eliminar/{usuario_id}", response_description="usuario eliminado", dependencies=[Depends(usuario_rol_requerido)])
+@usuario.delete("/usuarios/eliminar/{usuario_id}", response_description="usuario eliminado")
 async def eliminar_usuario_por_id(usuario_id: str, token: str = Depends(esquema_oauth)):
     usuario_eliminado = await conn["usuarios"].delete_one({"_id": usuario_id})
     if usuario_eliminado.deleted_count == 1:

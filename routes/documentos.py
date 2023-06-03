@@ -15,6 +15,7 @@ from bson import ObjectId
 
 from config.db import conn
 from auth.autenticacion import esquema_oauth
+from auth.services import usuario_rol_requerido
 from models.Documento import Documento, ActualizarDocumento
 from models.Id import PyObjectId
 from routes.imagenes import guardar_imagen
@@ -38,9 +39,8 @@ async def obtener_documentos(token: str = Depends(esquema_oauth)):
 async def obtener_documento_por_id(
     documento_id: str, token: str = Depends(esquema_oauth)
 ):
-    if (
-        documento := await conn["documentos"].find_one({"_id": documento_id})
-    ) is not None:
+    documento = await conn["documentos"].find_one({"_id": documento_id})
+    if documento is not None:
         return documento
 
     raise HTTPException(
@@ -54,7 +54,8 @@ async def obtener_documento_por_id(
     response_model=Documento,
 )
 async def obtener_documento_por_titulo(titulo: str = Depends(esquema_oauth)):
-    if (documento := await conn["documentos"].find_one({"titulo": titulo})) is not None:
+    documento = await conn["documentos"].find_one({"titulo": titulo})
+    if documento is not None:
         return documento
 
     raise HTTPException(status_code=404, detail=f"documento con {titulo} no encontrado")
@@ -64,6 +65,7 @@ async def obtener_documento_por_titulo(titulo: str = Depends(esquema_oauth)):
     "/documentos/guardar",
     response_description="Documento creado",
     response_model=Documento,
+    # dependencies=[Depends(usuario_rol_requerido)]
 )
 async def guardar_documento(
     tipo_documento: str = Form(...),
@@ -81,9 +83,9 @@ async def guardar_documento(
 ):
     image = await guardar_imagen(imagenAGuardar=imagen)
 
-    documento_id: PyObjectId = ObjectId()
+    documento_id = str(ObjectId())
     documento = {
-        "_id": str(documento_id),
+        "_id": documento_id,
         "tipo_documento": tipo_documento,
         "autor": autor,
         "titulo": titulo,
@@ -127,16 +129,14 @@ async def actualizar_documento(
         )
 
         if update_result.modified_count == 1:
-            if (
-                documento_actualizado := await conn["documentos"].find_one(
-                    {"_id": documento_id}
-                )
-            ) is not None:
+            documento_actualizado = await conn["documentos"].find_one(
+                {"_id": documento_id}
+            )
+            if documento_actualizado is not None:
                 return documento_actualizado
 
-    if (
-        documento_existente := await conn["documentos"].find_one({"_id": documento_id})
-    ) is not None:
+    documento_existente = await conn["documentos"].find_one({"_id": documento_id})
+    if documento_existente is not None:
         return documento_existente
 
     raise HTTPException(
