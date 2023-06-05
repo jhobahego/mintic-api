@@ -17,11 +17,11 @@ app.include_router(registro)
 app.include_router(imagenes)
 app.include_router(auth)
 
-PRODUCTION_URL = os.environ["PRODUCTION_URL"]
+# PRODUCTION_URL = os.environ["PRODUCTION_URL"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8080", PRODUCTION_URL],
+    allow_origins=["http://localhost:8080"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
