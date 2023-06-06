@@ -6,7 +6,7 @@ from models.Id import PyObjectId
 from enum import Enum
 
 
-class Role(Enum):
+class Role(str, Enum):
     USUARIO = "USER"
     ADMIN = "ADMIN"
 

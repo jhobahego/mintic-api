@@ -7,7 +7,6 @@ from typing import List
 from models.Usuario import Usuario, ActualizarUsuario, Role
 from config.db import conn
 from auth.autenticacion import esquema_oauth
-from auth.services import usuario_rol_requerido
 
 usuario = APIRouter()
 

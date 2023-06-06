@@ -15,9 +15,8 @@ from bson import ObjectId
 
 from config.db import conn
 from auth.autenticacion import esquema_oauth
-from auth.services import usuario_rol_requerido
+from auth.services import usuario_admin_requerido
 from models.Documento import Documento, ActualizarDocumento
-from models.Id import PyObjectId
 from routes.imagenes import guardar_imagen
 
 documento = APIRouter()
@@ -65,7 +64,7 @@ async def obtener_documento_por_titulo(titulo: str = Depends(esquema_oauth)):
     "/documentos/guardar",
     response_description="Documento creado",
     response_model=Documento,
-    # dependencies=[Depends(usuario_rol_requerido)]
+    dependencies=[Depends(usuario_admin_requerido)]
 )
 async def guardar_documento(
     tipo_documento: str = Form(...),
