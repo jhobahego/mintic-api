@@ -4,7 +4,7 @@ from fastapi.encoders import jsonable_encoder
 from passlib.context import CryptContext
 from typing import List
 
-from models.Usuario import Usuario, ActualizarUsuario, Role
+from models.Usuario import Usuario, ActualizarUsuario, Role, UserResponse
 from config.db import conn
 from auth.autenticacion import esquema_oauth
 
@@ -31,7 +31,7 @@ async def obtener_usuario_por_nombre(nombre_usuario: str, token: str = Depends(e
         status_code=404, detail=f"Usuario {nombre_usuario} no encontrado")
 
 
-@usuario.post("/usuarios/guardar", response_description="Usuario guardado", response_model=Usuario)
+@usuario.post("/usuarios/guardar", response_description="Usuario guardado", response_model=UserResponse)
 async def guardar_usuario(usuario: Usuario = Body(...)):
     usuarios = await obtener_usuarios()
     if any(u["correo"] == usuario.correo for u in usuarios):

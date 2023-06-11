@@ -40,6 +40,24 @@ class Usuario(BaseModel):
         }
 
 
+class UserResponse(BaseModel):
+    usuario_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    nombres: str
+    correo: str
+    rol: Role
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+        schema_extra = {
+            "example": {
+                "nombres": "Jane Doe",
+                "correo": "jdoe@example.com",
+                "rol": "USER"
+            }
+        }
+
 class ActualizarUsuario(BaseModel):
     nombres: Optional[str]
     apellidos: Optional[str]
