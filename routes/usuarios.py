@@ -7,6 +7,7 @@ from typing import List
 from models.Usuario import Usuario, ActualizarUsuario, Role, UserResponse
 from config.db import conn
 from auth.autenticacion import esquema_oauth
+from auth.services import usuario_admin_requerido
 
 usuario = APIRouter()
 
@@ -15,20 +16,20 @@ contexto_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def hashear_contra(contra):
     return contexto_pwd.hash(contra)
 
-@usuario.get("/usuarios", response_description="Usuarios listados", response_model=List[Usuario])
-async def obtener_usuarios():
+@usuario.get("/usuarios", response_description="Usuarios listados", response_model=List[Usuario], dependencies=[Depends(usuario_admin_requerido)])
+async def obtener_usuarios(token: str = Depends(esquema_oauth)):
     usuarios = await conn["usuarios"].find().to_list(1000)
     return usuarios
 
 
-@usuario.get("/usuarios/nombre/{nombre_usuario}", response_description="Usuario obtenido", response_model=Usuario)
-async def obtener_usuario_por_nombre(nombre_usuario: str, token: str = Depends(esquema_oauth)):
-    usuario_obtenido = await conn["usuarios"].find_one({"nombres": nombre_usuario})
+@usuario.get("/usuarios/{correo}", response_description="Usuario obtenido", response_model=Usuario)
+async def obtener_usuario_por_correo(correo: str, token: str = Depends(esquema_oauth)):
+    usuario_obtenido = await conn["usuarios"].find_one({"correo": correo})
     if usuario_obtenido is not None:
         return usuario_obtenido
 
     raise HTTPException(
-        status_code=404, detail=f"Usuario {nombre_usuario} no encontrado")
+        status_code=404, detail=f"Usuario con ese correo no encontrado")
 
 
 @usuario.post("/usuarios/guardar", response_description="Usuario guardado", response_model=UserResponse)
