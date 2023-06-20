@@ -22,7 +22,7 @@ async def obtener_usuarios(token: str = Depends(esquema_oauth)):
     return usuarios
 
 
-@usuario.get("/usuarios/{correo}", response_description="Usuario obtenido", response_model=Usuario)
+@usuario.get("/usuarios/correo/{correo}", response_description="Usuario obtenido", response_model=Usuario)
 async def obtener_usuario_por_correo(correo: str, token: str = Depends(esquema_oauth)):
     usuario_obtenido = await conn["usuarios"].find_one({"correo": correo})
     if usuario_obtenido is not None:
