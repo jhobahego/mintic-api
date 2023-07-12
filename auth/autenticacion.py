@@ -12,15 +12,18 @@ from models.Usuario import Usuario, UserResponse
 from config.db import conn
 
 import os
+from os.path import join, dirname
 
 auth = APIRouter()
-load_dotenv()
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 
 esquema_oauth = OAuth2PasswordBearer(tokenUrl="token")
 contexto_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-CLAVE = os.environ["CLAVE_SECRETA"]
+CLAVE = os.environ.get("CLAVE_SECRETA")
 ALGORITMO = "HS256"
 TIEMPO_EN_MINUTOS_EXPIRACION_TOKEN = 60
 
