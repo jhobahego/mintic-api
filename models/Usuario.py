@@ -1,6 +1,5 @@
 from typing import Optional, Union
-from pydantic import Field, EmailStr, BaseModel
-from bson import ObjectId
+from pydantic import ConfigDict, Field, EmailStr, BaseModel
 from models.Id import PyObjectId
 
 from enum import Enum
@@ -22,11 +21,10 @@ class Usuario(BaseModel):
     inactivo: Union[bool, None] = Field(default=False)
     rol: Optional[Role] = Field(default=Role.USUARIO)
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
             "example": {
                 "nombres": "Jane Doe",
                 "apellidos": "hernandez gomez",
@@ -35,9 +33,10 @@ class Usuario(BaseModel):
                 "pais": "Colombia",
                 "ciudad": "Betulia",
                 "inactivo": True,
-                "rol": "USER"
+                "rol": "USER",
             }
-        }
+        },
+    )
 
 
 class UserResponse(BaseModel):
@@ -46,32 +45,32 @@ class UserResponse(BaseModel):
     correo: str
     rol: Role
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
             "example": {
                 "nombres": "Jane Doe",
                 "correo": "jdoe@example.com",
-                "rol": "USER"
+                "rol": "USER",
             }
-        }
+        },
+    )
+
 
 class ActualizarUsuario(BaseModel):
-    nombres: Optional[str]
-    apellidos: Optional[str]
-    correo: Optional[EmailStr]
-    contra: Optional[str]
-    pais: Optional[str]
-    ciudad: Optional[str]
-    inactivo: Optional[bool]
-    rol: Optional[Role]
+    nombres: Optional[str] = None
+    apellidos: Optional[str] = None
+    correo: Optional[EmailStr] = None
+    contra: Optional[str] = None
+    pais: Optional[str] = None
+    ciudad: Optional[str] = None
+    inactivo: Optional[bool] = None
+    rol: Optional[Role] = None
 
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        schema_extra = {
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        json_schema_extra={
             "example": {
                 "nombres": "Jane Doe",
                 "apellidos": "hernandez gomez",
@@ -80,6 +79,7 @@ class ActualizarUsuario(BaseModel):
                 "pais": "Colombia",
                 "ciudad": "Betulia",
                 "inactivo": False,
-                "rol": "USER"
+                "rol": "USER",
             }
-        }
+        },
+    )

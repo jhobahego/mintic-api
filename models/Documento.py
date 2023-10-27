@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import ConfigDict, BaseModel, Field
 from typing import Text, Optional
 from models.Id import PyObjectId
-from bson import ObjectId
+
 
 class Documento(BaseModel):
     documento_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
@@ -17,12 +17,12 @@ class Documento(BaseModel):
     idioma: str = Field(...)
     paginas: int = Field(...)
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
             "example": {
+                "_id": "645701810b24c99f29187db0",
                 "tipo_documento": "digital",
                 "autor": "Robert C. Martin",
                 "titulo": "clean code",
@@ -35,25 +35,25 @@ class Documento(BaseModel):
                 "idioma": "ingles",
                 "paginas": "125",
             }
-        }
+        },
+    )
 
 
 class ActualizarDocumento(BaseModel):
-    tipo_documento: Optional[str]
-    autor: Optional[str]
-    titulo: Optional[str]
-    descripcion: Optional[Text]
-    categoria: Optional[str]
-    stock: Optional[int]
-    precio: Optional[int]
-    editorial: Optional[str]
-    idioma: Optional[str]
-    paginas: Optional[int]
+    tipo_documento: Optional[str] = None
+    autor: Optional[str] = None
+    titulo: Optional[str] = None
+    descripcion: Optional[Text] = None
+    categoria: Optional[str] = None
+    stock: Optional[int] = None
+    precio: Optional[int] = None
+    editorial: Optional[str] = None
+    idioma: Optional[str] = None
+    paginas: Optional[int] = None
 
-    class Config:
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        schema_extra = {
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        json_schema_extra={
             "example": {
                 "tipo_documento": "digital",
                 "autor": "Robert C. Martin",
@@ -66,4 +66,5 @@ class ActualizarDocumento(BaseModel):
                 "idioma": "ingles",
                 "paginas": "125",
             }
-        }
+        },
+    )

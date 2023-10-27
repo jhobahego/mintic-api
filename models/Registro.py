@@ -1,7 +1,7 @@
-from pydantic import BaseModel, Field
-from bson import ObjectId
+from pydantic import ConfigDict, BaseModel, Field
 
 from models.Id import PyObjectId
+
 
 class Registro(BaseModel):
     registro_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
@@ -14,11 +14,10 @@ class Registro(BaseModel):
     cantidad: int = Field(...)
     activo: bool = Field(...)
 
-    class Config:
-        allow_population_by_field_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-        schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_schema_extra={
             "example": {
                 "id_cliente": "63afc7da089fe226352a222",
                 "nombre_cliente": "Jhon Hernandez",
@@ -29,4 +28,5 @@ class Registro(BaseModel):
                 "cantidad": 1,
                 "activo": True,
             }
-        }
+        },
+    )

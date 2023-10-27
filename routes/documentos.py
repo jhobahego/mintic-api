@@ -10,7 +10,6 @@ from fastapi import (
 )
 from fastapi.responses import JSONResponse, Response
 from fastapi.encoders import jsonable_encoder
-from typing import List
 from bson import ObjectId
 
 from config.db import conn
@@ -22,9 +21,7 @@ from routes.imagenes import guardar_imagen
 documento = APIRouter()
 
 
-@documento.get(
-    "/", response_description="Documentos listados", response_model=List[Documento]
-)
+@documento.get("/", response_description="Documentos listados")
 async def obtener_documentos(token: str = Depends(esquema_oauth)):
     documentos = await conn["documentos"].find().to_list(1000)
     return documentos
@@ -64,7 +61,7 @@ async def obtener_documento_por_titulo(titulo: str = Depends(esquema_oauth)):
     "/documentos/guardar",
     response_description="Documento creado",
     response_model=Documento,
-    dependencies=[Depends(usuario_admin_requerido)]
+    dependencies=[Depends(usuario_admin_requerido)],
 )
 async def guardar_documento(
     tipo_documento: str = Form(...),
