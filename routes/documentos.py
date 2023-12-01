@@ -27,11 +27,7 @@ async def obtener_documentos(token: str = Depends(esquema_oauth)):
     return documentos
 
 
-@documento.get(
-    "/documentos/{documento_id}",
-    response_description="Documento obtenido",
-    response_model=Documento,
-)
+@documento.get("/documentos/{documento_id}", response_description="Documento obtenido")
 async def obtener_documento_por_id(
     documento_id: str, token: str = Depends(esquema_oauth)
 ):
@@ -44,11 +40,7 @@ async def obtener_documento_por_id(
     )
 
 
-@documento.get(
-    "/documentos/titulo/{titulo}",
-    response_description="Documento obtenido",
-    response_model=Documento,
-)
+@documento.get("/documentos/titulo/{titulo}", response_description="Documento obtenido")
 async def obtener_documento_por_titulo(titulo: str = Depends(esquema_oauth)):
     documento = await conn["documentos"].find_one({"titulo": titulo})
     if documento is not None:
@@ -60,7 +52,6 @@ async def obtener_documento_por_titulo(titulo: str = Depends(esquema_oauth)):
 @documento.post(
     "/documentos/guardar",
     response_description="Documento creado",
-    response_model=Documento,
     dependencies=[Depends(usuario_admin_requerido)],
 )
 async def guardar_documento(
@@ -107,7 +98,6 @@ async def guardar_documento(
 @documento.put(
     "/documentos/actualizar/{documento_id}",
     response_description="Documento actualizado",
-    response_model=Documento,
 )
 async def actualizar_documento(
     documento_id: str,

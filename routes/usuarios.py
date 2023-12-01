@@ -30,7 +30,6 @@ async def obtener_usuarios(token: str = Depends(esquema_oauth)):
 @usuario.get(
     "/usuarios/correo/{correo}",
     response_description="Usuario obtenido",
-    response_model=Usuario,
 )
 async def obtener_usuario_por_correo(correo: str, token: str = Depends(esquema_oauth)):
     usuario_obtenido = await conn["usuarios"].find_one({"correo": correo})
@@ -66,8 +65,7 @@ async def guardar_usuario(usuario: Usuario = Body(...)):
 
 @usuario.put(
     "/usuarios/actualizar/{usuario_id}",
-    response_description="Usuario actualizado",
-    response_model=Usuario,
+    response_description="Usuario actualizado"
 )
 async def actualizar_usuario(
     usuario_id: str,

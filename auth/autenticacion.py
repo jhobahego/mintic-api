@@ -5,7 +5,6 @@ from pydantic import EmailStr
 from jose import jwt, JWTError
 from datetime import timedelta, datetime
 from passlib.context import CryptContext
-from dotenv import load_dotenv
 
 from models.Token import Token, TokenData
 from models.Usuario import Usuario, UserResponse
@@ -101,6 +100,6 @@ async def generar_token(datos: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": access_token, "tipo_token": "bearer"}
 
 
-@auth.get("/usuarios/perfil", response_model=UserResponse)
+@auth.get("/usuarios/perfil")
 async def obtener_perfil(usuario: Usuario = Depends(obtener_usuario_activo_actual)):
     return usuario
