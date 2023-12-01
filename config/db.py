@@ -1,10 +1,6 @@
-from dotenv import load_dotenv
 import motor.motor_asyncio
-import os
-from os.path import join, dirname
 
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
+from decouple import config
 
-client = motor.motor_asyncio.AsyncIOMotorClient(os.environ.get("MONGODB_URL"))
+client = motor.motor_asyncio.AsyncIOMotorClient(config("MONGODB_URL"))
 conn = client.misiontic

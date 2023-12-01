@@ -11,24 +11,22 @@ from models.Token import Token, TokenData
 from models.Usuario import Usuario, UserResponse
 from config.db import conn
 
-import os
-from os.path import join, dirname
+from decouple import config
+
 
 auth = APIRouter()
-
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
-
 
 esquema_oauth = OAuth2PasswordBearer(tokenUrl="token")
 contexto_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-CLAVE = os.environ.get("CLAVE_SECRETA")
+CLAVE = config("CLAVE_SECRETA")
 ALGORITMO = "HS256"
 TIEMPO_EN_MINUTOS_EXPIRACION_TOKEN = 60
 
+
 def verificar_contra(contra, contra_hasheada):
     return contexto_pwd.verify(contra, contra_hasheada)
+
 
 async def autenticar_usuario(correo: EmailStr, contra: str):
     usuario = await conn["usuarios"].find_one({"correo": correo})
@@ -47,8 +45,7 @@ def crear_access_token(datos: dict, expires_delta: Union[timedelta, None] = None
         expirar = datetime.utcnow() + timedelta(minutes=15)
 
     a_codificar.update({"exp": expirar})
-    jwt_codificado = jwt.encode(
-        a_codificar, CLAVE, algorithm=ALGORITMO)
+    jwt_codificado = jwt.encode(a_codificar, CLAVE, algorithm=ALGORITMO)
     return jwt_codificado
 
 
@@ -80,7 +77,9 @@ async def obtener_usuario_actual(token: str = Depends(esquema_oauth)):
     return usuario
 
 
-async def obtener_usuario_activo_actual(usuario_actual: Usuario = Depends(obtener_usuario_actual)):
+async def obtener_usuario_activo_actual(
+    usuario_actual: Usuario = Depends(obtener_usuario_actual)
+):
     if usuario_actual["inactivo"]:
         raise HTTPException(status_code=400, detail="Inactive user")
     return usuario_actual
