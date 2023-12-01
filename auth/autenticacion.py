@@ -7,7 +7,7 @@ from datetime import timedelta, datetime
 from passlib.context import CryptContext
 
 from models.Token import Token, TokenData
-from models.Usuario import Usuario, UserResponse
+from models.Usuario import Usuario
 from config.db import conn
 
 from decouple import config

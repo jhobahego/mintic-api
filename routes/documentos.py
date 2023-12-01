@@ -15,7 +15,7 @@ from bson import ObjectId
 from config.db import conn
 from auth.autenticacion import esquema_oauth
 from auth.services import usuario_admin_requerido
-from models.Documento import Documento, ActualizarDocumento
+from models.Documento import ActualizarDocumento
 from routes.imagenes import guardar_imagen
 
 documento = APIRouter()
