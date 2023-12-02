@@ -1,10 +1,11 @@
 from pydantic import ConfigDict, BaseModel, Field
 from typing import Text, Optional
-from models.Id import PyObjectId
+# from models.Id import PyObjectId
 
 
 class Documento(BaseModel):
-    documento_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    # documento_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: Optional[str] = Field(alias="_id", default=None)
     tipo_documento: str = Field(...)
     autor: str = Field(...)
     titulo: str = Field(...)
