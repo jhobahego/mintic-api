@@ -1,10 +1,12 @@
 from pydantic import ConfigDict, BaseModel, Field
+from typing import Optional
 
-from models.Id import PyObjectId
+# from models.Id import PyObjectId
 
 
 class Registro(BaseModel):
-    registro_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    # registro_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: Optional[str] = Field(alias="_id", default=None)
     id_cliente: str = Field(...)
     nombre_cliente: str = Field(...)
     id_documento: str = Field(...)
