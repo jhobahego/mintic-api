@@ -1,6 +1,6 @@
 from typing import Optional, Union
 from pydantic import ConfigDict, Field, EmailStr, BaseModel
-from models.Id import PyObjectId
+# from models.Id import PyObjectId
 
 from enum import Enum
 
@@ -11,7 +11,8 @@ class Role(str, Enum):
 
 
 class Usuario(BaseModel):
-    usuario_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    # usuario_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: Optional[str] = Field(alias="_id", default=None)
     nombres: str = Field(...)
     apellidos: str = Field(...)
     correo: EmailStr = Field(...)
@@ -40,7 +41,8 @@ class Usuario(BaseModel):
 
 
 class UserResponse(BaseModel):
-    usuario_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    # usuario_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    id: Optional[str] = Field(alias="_id", default=None)
     nombres: str
     correo: str
     rol: Role
