@@ -13,7 +13,7 @@ from config.db import conn
 from decouple import config
 
 
-auth = APIRouter()
+auth = APIRouter(tags=["Autenticacion"])
 
 esquema_oauth = OAuth2PasswordBearer(tokenUrl="token")
 contexto_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -8,7 +8,7 @@ from config.db import conn
 from auth.autenticacion import esquema_oauth
 from auth.services import usuario_admin_requerido
 
-usuario = APIRouter()
+usuario = APIRouter(tags=["Usuarios"])
 
 contexto_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

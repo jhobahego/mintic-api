@@ -7,7 +7,7 @@ from auth.autenticacion import esquema_oauth
 from models.Registro import Registro
 from typing import List
 
-registro = APIRouter()
+registro = APIRouter(tags=["Registro de ventas"])
 
 
 @registro.get(

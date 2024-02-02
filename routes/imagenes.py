@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse, FileResponse
 from pathlib import Path
 import shutil
 
-imagenes = APIRouter()
+imagenes = APIRouter(tags=["Imagenes"])
 
 
 @imagenes.get("/images/{nombre_imagen}")

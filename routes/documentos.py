@@ -18,7 +18,7 @@ from auth.services import usuario_admin_requerido
 from models.Documento import ActualizarDocumento
 from routes.imagenes import guardar_imagen
 
-documento = APIRouter()
+documento = APIRouter(tags=["Documentos"])
 
 
 @documento.get("/", response_description="Documentos listados")
