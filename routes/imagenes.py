@@ -25,7 +25,7 @@ async def guardar_imagen(imagenAGuardar: UploadFile = File(...)):
         ruta_completa = Path(ruta_guardado).absolute()
         with open(ruta_completa, "wb") as archivo:
             shutil.copyfileobj(imagenAGuardar.file, archivo)
-        url_imagen = f"http:localhost:8000/{ruta_guardado}"
+        url_imagen = f"http://localhost:8000/{ruta_guardado}"
         return {"url_imagen": url_imagen}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
