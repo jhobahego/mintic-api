@@ -9,6 +9,7 @@ from passlib.context import CryptContext
 from models.Token import Token, TokenData
 from models.Usuario import Usuario
 from config.db import conn
+from utils.serializers import serialize_mongo_doc
 
 from decouple import config
 
@@ -102,4 +103,5 @@ async def generar_token(datos: OAuth2PasswordRequestForm = Depends()):
 
 @auth.get("/usuarios/perfil")
 async def obtener_perfil(usuario: Usuario = Depends(obtener_usuario_activo_actual)):
-    return usuario
+    # Usar la función de serialización para convertir ObjectId a string
+    return serialize_mongo_doc(usuario)

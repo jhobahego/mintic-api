@@ -17,6 +17,7 @@ from auth.autenticacion import esquema_oauth
 from auth.services import usuario_admin_requerido
 from models.Documento import ActualizarDocumento
 from routes.imagenes import guardar_imagen
+from utils.serializers import serialize_mongo_doc, serialize_mongo_docs
 
 documento = APIRouter(tags=["Documentos"])
 
@@ -24,7 +25,7 @@ documento = APIRouter(tags=["Documentos"])
 @documento.get("/", response_description="Documentos listados")
 async def obtener_documentos(token: str = Depends(esquema_oauth)):
     documentos = await conn["documentos"].find().to_list(1000)
-    return documentos
+    return serialize_mongo_docs(documentos)
 
 
 @documento.get("/documentos/{documento_id}", response_description="Documento obtenido")
@@ -33,7 +34,7 @@ async def obtener_documento_por_id(
 ):
     documento = await conn["documentos"].find_one({"_id": documento_id})
     if documento is not None:
-        return documento
+        return serialize_mongo_doc(documento)
 
     raise HTTPException(
         status_code=404, detail=f"documento con id {documento_id} no encontrado"
@@ -44,7 +45,7 @@ async def obtener_documento_por_id(
 async def obtener_documento_por_titulo(titulo: str = Depends(esquema_oauth)):
     documento = await conn["documentos"].find_one({"titulo": titulo})
     if documento is not None:
-        return documento
+        return serialize_mongo_doc(documento)
 
     raise HTTPException(status_code=404, detail=f"documento con {titulo} no encontrado")
 
@@ -92,7 +93,7 @@ async def guardar_documento(
     documento_creado = await conn["documentos"].find_one(
         {"_id": documento_insertado.inserted_id}
     )
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=documento_creado)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content=serialize_mongo_doc(documento_creado))
 
 
 @documento.put(
@@ -119,27 +120,26 @@ async def actualizar_documento(
                 {"_id": documento_id}
             )
             if documento_actualizado is not None:
-                return documento_actualizado
+                return serialize_mongo_doc(documento_actualizado)
 
     documento_existente = await conn["documentos"].find_one({"_id": documento_id})
     if documento_existente is not None:
-        return documento_existente
+        return serialize_mongo_doc(documento_existente)
 
     raise HTTPException(
         status_code=404, detail=f"documento con id: {documento_id} no encontrado"
     )
 
 
-@documento.delete(
-    "/documentos/eliminar/{documento_id}", response_description="documento eliminado"
-)
+@documento.delete("/documentos/eliminar/{documento_id}", response_description="Documento eliminado")
 async def eliminar_documento_por_id(
     documento_id: str, token: str = Depends(esquema_oauth)
 ):
-    doc_eliminado = await conn["documentos"].delete_one({"_id": documento_id})
-    if doc_eliminado.deleted_count == 1:
+    documento_borrado = await conn["documentos"].find_one({"_id": documento_id})
+    if documento_borrado:
+        await conn["documentos"].delete_one({"_id": documento_id})
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     raise HTTPException(
-        status_code=404, detail=f"documento con id {documento_id} no encontrado"
+        status_code=404, detail=f"documento con id: {documento_id} no encontrado"
     )

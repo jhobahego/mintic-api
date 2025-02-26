@@ -7,6 +7,7 @@ from models.Usuario import Usuario, ActualizarUsuario, Role, UserResponse
 from config.db import conn
 from auth.autenticacion import esquema_oauth
 from auth.services import usuario_admin_requerido
+from utils.serializers import serialize_mongo_doc, serialize_mongo_docs
 
 usuario = APIRouter(tags=["Usuarios"])
 
@@ -24,7 +25,7 @@ def hashear_contra(contra):
 )
 async def obtener_usuarios(token: str = Depends(esquema_oauth)):
     usuarios = await conn["usuarios"].find().to_list(1000)
-    return usuarios
+    return serialize_mongo_docs(usuarios)
 
 
 @usuario.get(
@@ -34,7 +35,7 @@ async def obtener_usuarios(token: str = Depends(esquema_oauth)):
 async def obtener_usuario_por_correo(correo: str, token: str = Depends(esquema_oauth)):
     usuario_obtenido = await conn["usuarios"].find_one({"correo": correo})
     if usuario_obtenido is not None:
-        return usuario_obtenido
+        return serialize_mongo_doc(usuario_obtenido)
 
     raise HTTPException(status_code=404, detail="Usuario con ese correo no encontrado")
 
@@ -60,7 +61,7 @@ async def guardar_usuario(usuario: Usuario = Body(...)):
     nuevo_usuario = await conn["usuarios"].insert_one(usuario)
     usuario_creado = await conn["usuarios"].find_one({"_id": nuevo_usuario.inserted_id})
 
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=usuario_creado)
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content=serialize_mongo_doc(usuario_creado))
 
 
 @usuario.put(
@@ -83,11 +84,11 @@ async def actualizar_usuario(
         if update_result.modified_count == 1:
             usuario_actualizado = await conn["usuarios"].find_one({"_id": usuario_id})
             if usuario_actualizado is not None:
-                return usuario_actualizado
+                return serialize_mongo_doc(usuario_actualizado)
 
     usuario_existente = await conn["usuarios"].find_one({"_id": usuario_id})
     if usuario_existente is not None:
-        return usuario_existente
+        return serialize_mongo_doc(usuario_existente)
 
     raise HTTPException(
         status_code=404, detail=f"usuario con id: {usuario_id} no encontrado"
