@@ -2,7 +2,7 @@ from bson import ObjectId
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic_core import CoreSchema, core_schema
 from pydantic.json_schema import JsonSchemaValue
-from typing import Any
+from typing import Any, Annotated
 
 
 class PyObjectId(ObjectId):
@@ -10,8 +10,19 @@ class PyObjectId(ObjectId):
     def __get_pydantic_core_schema__(
         cls, source_type: Any, handler: GetCoreSchemaHandler
     ) -> CoreSchema:
-        return core_schema.no_info_after_validator_function(cls, handler(ObjectId))
-
+        return core_schema.json_or_python_schema(
+            python_schema=core_schema.union_schema([
+                core_schema.is_instance_schema(ObjectId),
+                core_schema.chain_schema([
+                    core_schema.str_schema(),
+                    core_schema.no_info_plain_validator_function(cls.validate),
+                ])
+            ]),
+            json_schema=core_schema.str_schema(),
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                lambda instance: str(instance)
+            ),
+        )
 
     @classmethod
     def validate(cls, v):
@@ -25,7 +36,11 @@ class PyObjectId(ObjectId):
     ) -> JsonSchemaValue:
         json_schema = handler(core_schema)
         json_schema = handler.resolve_ref_schema(json_schema)
-        # Modify the JSON schema as needed
         json_schema["type"] = "string"
         return json_schema
-
+        
+    def __str__(self) -> str:
+        return str(super())
+        
+    def __repr__(self) -> str:
+        return f"PyObjectId({super().__repr__()})"

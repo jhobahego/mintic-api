@@ -7,6 +7,9 @@ from routes.usuarios import usuario, hashear_contra
 from routes.documentos import documento
 from routes.registros import registro
 from routes.imagenes import imagenes
+from routes.ia import ia
+from routes.integraciones import integracion
+from routes.notificaciones import notificaciones
 from config.db import conn
 from models.Usuario import Role
 
@@ -14,12 +17,19 @@ from auth.autenticacion import auth
 
 from decouple import config
 
-app = FastAPI()
+app = FastAPI(
+    title="Sistema de Gestión Documental API",
+    description="API para el sistema de gestión documental con funcionalidades avanzadas de IA y análisis",
+    version="2.0.0"
+)
 
 app.include_router(usuario)
 app.include_router(documento)
 app.include_router(registro)
 app.include_router(imagenes)
+app.include_router(ia)
+app.include_router(integracion)
+app.include_router(notificaciones)
 app.include_router(auth)
 
 # PRODUCTION_URL = config("PRODUCTION_URL")

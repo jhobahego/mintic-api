@@ -7,7 +7,7 @@ from models.Usuario import Usuario, ActualizarUsuario, Role, UserResponse
 from config.db import conn
 from auth.autenticacion import esquema_oauth
 from auth.services import usuario_admin_requerido
-from utils.serializers import serialize_mongo_doc, serialize_mongo_docs
+from utils.serializers import serialize_mongo_doc, serialize_mongo_docs, serialize_mongo_doc_filtered
 
 usuario = APIRouter(tags=["Usuarios"])
 
@@ -56,12 +56,27 @@ async def guardar_usuario(usuario: Usuario = Body(...)):
         usuario.rol = Role.ADMIN
 
     usuario.contra = hashear_contra(usuario.contra)
-    usuario = jsonable_encoder(usuario)
-
-    nuevo_usuario = await conn["usuarios"].insert_one(usuario)
+    
+    # Crear un diccionario manualmente para evitar problemas de serialización
+    usuario_dict = {
+        "nombres": usuario.nombres,
+        "apellidos": usuario.apellidos,
+        "correo": usuario.correo,
+        "contra": usuario.contra,
+        "pais": usuario.pais,
+        "ciudad": usuario.ciudad,
+        "inactivo": usuario.inactivo,
+        "rol": usuario.rol
+    }
+    
+    nuevo_usuario = await conn["usuarios"].insert_one(usuario_dict)
     usuario_creado = await conn["usuarios"].find_one({"_id": nuevo_usuario.inserted_id})
+    
+    # Utilizamos la función de serialización que elimina campos confidenciales
+    campos_excluir = {"contra"}
+    usuario_serializado = serialize_mongo_doc_filtered(usuario_creado, campos_excluir)
 
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=serialize_mongo_doc(usuario_creado))
+    return JSONResponse(status_code=status.HTTP_201_CREATED, content=usuario_serializado)
 
 
 @usuario.put(

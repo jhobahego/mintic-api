@@ -1,6 +1,6 @@
 from typing import Optional, Union
 from pydantic import ConfigDict, Field, EmailStr, BaseModel
-# from models.Id import PyObjectId
+from models.Id import PyObjectId
 
 from enum import Enum
 
@@ -11,8 +11,7 @@ class Role(str, Enum):
 
 
 class Usuario(BaseModel):
-    # usuario_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    id: Optional[str] = Field(alias="_id", default=None)
+    usuario_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     nombres: str = Field(...)
     apellidos: str = Field(...)
     correo: EmailStr = Field(...)
@@ -41,10 +40,13 @@ class Usuario(BaseModel):
 
 
 class UserResponse(BaseModel):
-    # usuario_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    id: Optional[str] = Field(alias="_id", default=None)
+    usuario_id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     nombres: str
+    apellidos: str
     correo: str
+    pais: str
+    ciudad: str
+    inactivo: bool
     rol: Role
 
     model_config = ConfigDict(
@@ -52,8 +54,13 @@ class UserResponse(BaseModel):
         arbitrary_types_allowed=True,
         json_schema_extra={
             "example": {
+                "_id": "507f1f77bcf86cd799439011",
                 "nombres": "Jane Doe",
+                "apellidos": "Hernandez Gomez",
                 "correo": "jdoe@example.com",
+                "pais": "Colombia",
+                "ciudad": "Betulia",
+                "inactivo": False,
                 "rol": "USER",
             }
         },
