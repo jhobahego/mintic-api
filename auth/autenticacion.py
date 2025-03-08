@@ -90,7 +90,7 @@ async def generar_token(datos: OAuth2PasswordRequestForm = Depends()):
     usuario = await autenticar_usuario(datos.username, datos.password)
     if not usuario:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="correo electronico o contraseña incorrecta",
             headers={"WWW-Autenticate": "Bearer"},
         )
