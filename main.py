@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import asyncio
 import os
 
 from routes.usuarios import usuario, hashear_contra
@@ -52,9 +51,13 @@ async def init_admin():
         return
     
     # Datos del administrador por defecto
-    admin_email = os.environ.get("ADMIN_EMAIL", "admin@sistema.com")
-    admin_password = os.environ.get("ADMIN_PASSWORD", "Admin123!")
+    admin_email = os.environ.get("ADMIN_EMAIL")
+    admin_password = os.environ.get("ADMIN_PASSWORD")
     
+    if not admin_email or not admin_password:
+        print("No se ha configurado el correo o la contraseña del administrador.")
+        return
+
     # Crear el administrador
     nuevo_admin = {
         "nombres": "Administrador",
