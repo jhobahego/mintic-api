@@ -51,9 +51,11 @@ class ResultadoBusqueda(BaseModel):
 
 
 class RespuestaBusquedaSemantica(BaseModel):
-    resultados: List[ResultadoBusqueda] = []
+    """Respuesta a una consulta de búsqueda semántica"""
+    resultados: List[ResultadoBusqueda]
     tiempo_ejecucion: float
     total_encontrados: int
+    mensaje: Optional[str] = None
 
     model_config = ConfigDict(
         populate_by_name=True,

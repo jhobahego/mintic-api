@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Body, UploadFile, File
-import time
+from typing import Optional
 from datetime import datetime
 import random  # Simulación - en producción usar bibliotecas de ML/AI
+import time
 import os
+
+from services.gemini_service import gemini_service
 
 from config.db import conn
 from models.IA import (
@@ -71,6 +74,10 @@ async def extraer_texto_documento(
     """
     # Verificar que es un tipo de archivo permitido
     extensiones_permitidas = ['.pdf', '.jpg', '.jpeg', '.png', '.tiff']
+    
+    if archivo.filename is None:
+        raise HTTPException(status_code=400, detail="No se proporcionó un nombre de archivo")
+    
     ext = os.path.splitext(archivo.filename)[1].lower()
     
     if ext not in extensiones_permitidas:
@@ -117,60 +124,129 @@ async def extraer_texto_documento(
 @ia.post("/busqueda-semantica", response_model=RespuestaBusquedaSemantica)
 async def busqueda_semantica(
     consulta: ConsultaBusquedaSemantica = Body(...),
-    token: str = Depends(esquema_oauth)
+    token: str = Depends(esquema_oauth),
+    umbral_manual: Optional[float] = None  # Umbral manual opcional
 ):
-    """
-    Realiza una búsqueda semántica en los documentos utilizando procesamiento de lenguaje natural.
-    """
     start_time = time.time()
     
-    # En un sistema real, aquí procesaríamos la consulta con NLP y vectorizaríamos
-    # Por ahora, simplemente buscamos palabras clave en los documentos
+    # Validar que la consulta no esté vacía
+    if not consulta.query.strip():
+        raise HTTPException(status_code=400, detail="La consulta de búsqueda no puede estar vacía")
+    
+    # Validar umbral manual si se proporciona
+    if umbral_manual is not None and (umbral_manual < 0.0 or umbral_manual > 1.0):
+        raise HTTPException(status_code=400, detail="El umbral de relevancia debe estar entre 0 y 1")
     
     # Obtener todos los documentos de la base de datos
     todos_documentos = await conn["documentos"].find().to_list(1000)
     
-    # Palabras clave de la consulta (en un sistema real se usaría embedding)
-    palabras_clave = consulta.query.lower().split()
+    # Calcular similitud semántica usando Gemini para todos los documentos primero
+    documentos_con_relevancia = []
     
-    resultados = []
     for doc in todos_documentos:
-        # Calcular relevancia simulada basada en coincidencias
-        relevancia = 0
-        titulo = doc.get("titulo", "").lower()
-        descripcion = doc.get("descripcion", "").lower()
+        # Verificar que el documento tiene contenido para comparar
+        titulo = doc.get('titulo', '').strip()
+        descripcion = doc.get('descripcion', '').strip()
         
-        for palabra in palabras_clave:
-            if palabra in titulo:
-                relevancia += 0.5
-            if palabra in descripcion:
-                relevancia += 0.3
-                
-        # Solo incluir documentos con alguna relevancia
-        if relevancia > 0:
-            fragmento = f"{descripcion[:100]}..." if len(descripcion) > 100 else descripcion
-            
-            resultados.append(
-                ResultadoBusqueda(
-                    documento_id=doc.get("_id"),
-                    titulo=doc.get("titulo"),
-                    relevancia=round(relevancia, 2),
-                    fragmento=fragmento
-                )
-            )
+        if not titulo and not descripcion:
+            continue  # Saltar documentos sin contenido textual
+        
+        texto_documento = f"{titulo} {descripcion}"
+        
+        # Calcular relevancia semántica
+        relevancia = await gemini_service.semantic_similarity(
+            consulta.query,
+            texto_documento
+        )
+        
+        documentos_con_relevancia.append({
+            "doc": doc,
+            "titulo": titulo,
+            "descripcion": descripcion,
+            "relevancia": relevancia
+        })
     
-    # Ordenar por relevancia
-    resultados.sort(key=lambda x: x.relevancia, reverse=True)
+    # Si no hay documentos, devolver respuesta vacía
+    if not documentos_con_relevancia:
+        return RespuestaBusquedaSemantica(
+            resultados=[],
+            tiempo_ejecucion=round(time.time() - start_time, 3),
+            total_encontrados=0,
+            mensaje="No se encontraron documentos para evaluar"
+        )
+    
+    # Ordenar documentos por relevancia de mayor a menor
+    documentos_con_relevancia.sort(key=lambda x: x["relevancia"], reverse=True)
+    
+    # Aplicar umbral inteligente basado en análisis de brecha si no se proporciona umbral manual
+    if umbral_manual is None:
+        # Calcular brechas entre relevancia de documentos adyacentes
+        brechas = []
+        for i in range(1, len(documentos_con_relevancia)):
+            brecha = documentos_con_relevancia[i-1]["relevancia"] - documentos_con_relevancia[i]["relevancia"]
+            brechas.append({
+                "indice": i,
+                "brecha": brecha
+            })
+        
+        # Si hay documentos suficientes para analizar brechas
+        if brechas:
+            # Ordenar brechas por tamaño (de mayor a menor)
+            brechas.sort(key=lambda x: x["brecha"], reverse=True)
+            
+            # Encontrar la brecha más significativa entre los primeros n documentos
+            # Limitamos la búsqueda a los primeros 5 documentos o el 30% de los resultados
+            limite_busqueda = min(5, max(2, int(len(documentos_con_relevancia) * 0.3)))
+            
+            brechas_relevantes = [b for b in brechas if b["indice"] <= limite_busqueda]
+            
+            if brechas_relevantes:
+                # Si se encuentra una brecha significativa (>= 0.05), usarla como punto de corte
+                brecha_mayor = brechas_relevantes[0]
+                if brecha_mayor["brecha"] >= 0.05:
+                    indice_corte = brecha_mayor["indice"]
+                    documentos_con_relevancia = documentos_con_relevancia[:indice_corte]
+                else:
+                    # Si no hay brecha significativa, usar solo el top document con un nivel mínimo de relevancia
+                    if documentos_con_relevancia[0]["relevancia"] > 0.7:
+                        documentos_con_relevancia = [documentos_con_relevancia[0]]
+                    else:
+                        # Si ni siquiera el top document es suficientemente relevante, usar 0.65 como umbral
+                        documentos_con_relevancia = [d for d in documentos_con_relevancia if d["relevancia"] > 0.65]
+    else:
+        # Usar umbral manual si se proporciona
+        documentos_con_relevancia = [d for d in documentos_con_relevancia if d["relevancia"] > umbral_manual]
+    
+    # Convertir a ResultadoBusqueda
+    resultados = []
+    for doc_info in documentos_con_relevancia:
+        doc = doc_info["doc"]
+        descripcion = doc_info["descripcion"]
+        fragmento = f"{descripcion[:100]}..." if len(descripcion) > 100 else descripcion
+        
+        resultados.append(
+            ResultadoBusqueda(
+                documento_id=doc.get("_id"),
+                titulo=doc_info["titulo"],
+                relevancia=round(doc_info["relevancia"], 2),
+                fragmento=fragmento
+            )
+        )
     
     # Limitar al número de resultados solicitados
     resultados = resultados[:consulta.num_resultados]
     
     tiempo_ejecucion = round(time.time() - start_time, 3)
     
+    mensaje = None
+    if len(resultados) == 0:
+        mensaje = "No se encontraron documentos que coincidan con su consulta. Intente con términos más generales."
+    
     return RespuestaBusquedaSemantica(
         resultados=resultados,
         tiempo_ejecucion=tiempo_ejecucion,
-        total_encontrados=len(resultados)
+        total_encontrados=len(resultados),
+        mensaje=mensaje
     )
 
 
