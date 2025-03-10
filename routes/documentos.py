@@ -11,6 +11,7 @@ from fastapi import (
 from fastapi.responses import JSONResponse, Response
 from fastapi.encoders import jsonable_encoder
 from bson import ObjectId
+import json
 
 from config.db import conn
 from auth.autenticacion import esquema_oauth
@@ -69,7 +70,8 @@ async def guardar_documento(
     imagen: UploadFile = File(...),
     token: str = Depends(esquema_oauth),
 ):
-    image = await guardar_imagen(imagenAGuardar=imagen)
+    image_response = await guardar_imagen(imagenAGuardar=imagen)
+    image_data = json.loads(str(image_response))
 
     documento_id = str(ObjectId())
     documento = {
@@ -78,7 +80,7 @@ async def guardar_documento(
         "autor": autor,
         "titulo": titulo,
         "descripcion": descripcion,
-        "imagen": image["url_imagen"],
+        "imagen": image_data["url_imagen"],
         "categoria": categoria,
         "stock": stock,
         "precio": precio,
@@ -93,7 +95,17 @@ async def guardar_documento(
     documento_creado = await conn["documentos"].find_one(
         {"_id": documento_insertado.inserted_id}
     )
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=serialize_mongo_doc(documento_creado))
+
+    if documento_creado is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El documento no pudo ser creado",
+        )
+
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content=serialize_mongo_doc(documento_creado),
+    )
 
 
 @documento.put(
@@ -105,14 +117,15 @@ async def actualizar_documento(
     actualizarDocumento: ActualizarDocumento = Body(...),
     token: str = Depends(esquema_oauth),
 ):
-    actualizarDocumento = {
+    documento_actualizado_dict = {
         datos: valor
         for datos, valor in actualizarDocumento.dict().items()
         if valor is not None
     }
-    if len(actualizarDocumento) >= 1:
+
+    if len(documento_actualizado_dict) >= 1:
         update_result = await conn["documentos"].update_one(
-            {"_id": documento_id}, {"$set": actualizarDocumento}
+            {"_id": documento_id}, {"$set": documento_actualizado_dict}
         )
 
         if update_result.modified_count == 1:
@@ -131,7 +144,9 @@ async def actualizar_documento(
     )
 
 
-@documento.delete("/documentos/eliminar/{documento_id}", response_description="Documento eliminado")
+@documento.delete(
+    "/documentos/eliminar/{documento_id}", response_description="Documento eliminado"
+)
 async def eliminar_documento_por_id(
     documento_id: str, token: str = Depends(esquema_oauth)
 ):
