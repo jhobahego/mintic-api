@@ -37,7 +37,7 @@ class ConsultaBusquedaSemantica(BaseModel):
         json_schema_extra={
             "example": {
                 "query": "documentos sobre programación que hablen de Python",
-                "num_resultados": 5
+                "num_resultados": 5,
             }
         },
     )
@@ -52,6 +52,7 @@ class ResultadoBusqueda(BaseModel):
 
 class RespuestaBusquedaSemantica(BaseModel):
     """Respuesta a una consulta de búsqueda semántica"""
+
     resultados: List[ResultadoBusqueda]
     tiempo_ejecucion: float
     total_encontrados: int
@@ -71,7 +72,7 @@ class SolicitudTraduccion(BaseModel):
         json_schema_extra={
             "example": {
                 "documento_id": "645701810b24c99f29187db0",
-                "idioma_destino": "es"
+                "idioma_destino": "es",
             }
         },
     )
@@ -87,3 +88,15 @@ class ResultadoOCR(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
     )
+
+
+class SolicitudAsistente(BaseModel):
+    consulta: str
+    max_documentos_contexto: int = 3
+    umbral_relevancia: Optional[float] = 0.6
+
+
+class RespuestaAsistente(BaseModel):
+    respuesta: str
+    documentos_consultados: List[str] = []
+    tiempo_ejecucion: float
